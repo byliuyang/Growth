@@ -1,0 +1,201 @@
+type Query {
+    experiment(id: ID): Experiment
+}
+
+type Mutation {
+    createExperiment()
+    sendEvent()
+}
+
+# RFC3999
+scalar Time
+
+interface Model {
+    id: ID!
+    createdAt: Time!
+}
+
+type User implements Modal {
+    # Model
+    id: ID!
+    createdAt: Time!
+}
+
+type Experiment implements Model {
+    # Model
+    id: ID!
+    createdAt: Time!
+
+    name: String!
+    description: String
+    startAt: Time
+    endAt: Time # Must happen after startAt
+    acceptEventTypes: [EventType]
+
+    owner: User!
+    events: [Event]
+
+    propertyKeys: [PropertyKey]
+
+    variants: [Variant]
+
+    # what kind of events
+    # a full record of all relavant events
+}
+
+type EventType implements Model {
+    # Model
+    id: ID!
+    createdAt: Time!
+
+    properties: [String]
+}
+
+type Variant implements Model {
+    # Model
+    id: ID!
+    createdAt: Time!
+    prob: FLOAT
+
+    # exp: Experiment
+
+    hasProperties: [Property]
+    # property: PropertyKey!
+
+    containsEvents: [Event]
+}
+
+# type ControlGroup {
+#   v1
+#   v2
+# }
+
+type Property {
+    key: PropertyKey!
+    value: String! # serilize to one of PropertyType
+}
+
+p.name.name
+p.name.type
+
+p.key.name
+
+type PropertyKey {
+    name: Sting!
+    type: PropertyType!
+}
+
+enum PropertyType {
+    INT
+    STRING
+    FLOAT
+    BOOL
+}
+
+type Event {
+    type EventType
+    # key: String
+    # name: String
+    # variantKey: String
+    # expKey: String
+
+    # rel: EventRelations
+}
+
+type Property {
+    key: String
+    value: String
+}
+
+type Mutation {
+    pushEvent(eventKey: String, variantKey: String, expKey: String) Event
+    createExp(name: String, events: [String], properties: [String]) Experiment
+    updateExp(exp: Experiment) Experiment
+}
+
+type EventType {
+    key: String
+    name: String
+    variantKey: String
+    expKey: String
+}
+
+type EventInstance {
+    EventType
+    createdAt
+}
+
+type EventCount {
+    id
+    count
+
+    rel { refersTo: EventType}
+}
+
+# query
+# query {
+#   expriment(id: 123) {
+#     variants {
+#       properties {
+#         name
+#         value  # 1
+#       }
+#     }
+
+#   }
+# }
+
+# # PM creates exp
+# {
+#   "experiment": [
+#     {
+#       "variants": [
+#         {
+#           "id": 1,
+#           "properties": [
+#             {
+#             "key": {
+#               "name": "lengthOfButton",
+#               "type": "STRING",
+#             },
+#             "value": "red",
+#             },
+#             {
+#             "key": {
+#               "name": "lengthOfButton",
+#               "type": "INT",
+#             },
+#             "value": "#000001",
+#             },
+#             ...
+#           ]
+#         },
+#         }
+#       ]
+
+#     {
+
+#     },
+#     ...
+#   ]
+# }
+
+# Ask PM, Engineer & Data Team
+# develper push events
+# POST {
+#   "variantId": 123,
+#   "expId": 123,
+#   "eventId/Name": 43543
+
+#   "properties": [
+#     ["locale", "en-us"],
+#     ["isPaidUser", "true"], # wrong
+#     ["anonymousId": 2121212],
+#     ["userId": 23213231]
+#   ]
+# }
+
+# # PM's def in db
+# event {
+#   id: 43543
+#   propes
