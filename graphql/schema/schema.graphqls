@@ -1,0 +1,16 @@
+schema {
+    query: Query
+    mutation: Mutation
+}
+
+type Query {
+    event(id: Int!): Event
+}
+
+type Mutation {
+    event2(): Event!
+}
+
+type Event {
+    id: Int!
+}

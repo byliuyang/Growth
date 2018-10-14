@@ -11,20 +11,6 @@ type Model struct {
 	CreatedAt time.Time
 }
 
-// type Experiment struct {
-// 	Model
-// 	Name        string
-// 	Description string
-
-// 	StartAt time.Time
-// 	EndAt   time.Time
-
-// 	// AcceptEventTypes []Type
-
-// 	Owner          User
-// 	ReceivedEvents []Event
-// }
-
 // EventType is
 type EventType struct {
 	Model
