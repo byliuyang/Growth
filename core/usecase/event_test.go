@@ -11,13 +11,13 @@ import (
 )
 
 func TestPushEvent(t *testing.T) {
-	eventStore := &testadapter.FakeEventStore{}
+	eventStore := &testadapter.FakeEventStore{Capacity: 10}
 	_, err := PushEvent(entity.Event{}, eventStore)
 	require.NoError(t, err)
 }
 
 func TestFetchEventById(t *testing.T) {
-	eventStore := &testadapter.FakeEventStore{}
+	eventStore := &testadapter.FakeEventStore{Capacity: 10}
 
 	t.Run("event not found when store is empty", func(t *testing.T) {
 		e, err := FetchEventByID(1, eventStore)
@@ -44,23 +44,25 @@ func TestPushFetchIntegration(t *testing.T) {
 
 	eventStore := &testadapter.FakeEventStore{Capacity: 2}
 
-	t.Run("can push & fetch multiple events", func(t *testing.T) {
-		pushed1, err := PushEvent(entity.Event{}, eventStore)
-		require.NoError(t, err)
-		pushed2, err := PushEvent(entity.Event{}, eventStore)
-		require.NoError(t, err)
+	pushed1, err := PushEvent(entity.Event{}, eventStore)
+	require.NoError(t, err)
+	pushed2, err := PushEvent(entity.Event{}, eventStore)
+	require.NoError(t, err)
 
-		fetched1, err := FetchEventByID(pushed1.ID, eventStore)
-		require.NoError(t, err)
-		fetched2, err := FetchEventByID(pushed2.ID, eventStore)
-		require.NoError(t, err)
+	fetched1, err := FetchEventByID(pushed1.ID, eventStore)
+	require.NoError(t, err)
+	fetched2, err := FetchEventByID(pushed2.ID, eventStore)
+	require.NoError(t, err)
 
-		require.Equal(t, pushed1, fetched1)
-		require.Equal(t, pushed2, fetched2)
-	})
+	require.Equal(t, pushed1, fetched1)
+	require.Equal(t, pushed2, fetched2)
+}
 
-	t.Run("return error when store out of capacity", func(t *testing.T) {
-		_, err := PushEvent(entity.Event{}, eventStore)
-		require.Equal(t, adapter.ErrOutOfCapacity{Capacity: 2}, err)
-	})
+func TestCapacity(t *testing.T) {
+	eventStore := &testadapter.FakeEventStore{Capacity: 2}
+	PushEvent(entity.Event{}, eventStore)
+	PushEvent(entity.Event{}, eventStore)
+
+	_, err := PushEvent(entity.Event{}, eventStore)
+	require.Equal(t, &adapter.ErrOutOfCapacity{Capacity: 2}, err)
 }

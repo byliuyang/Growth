@@ -1,8 +1,6 @@
 package testadapter
 
 import (
-	"fmt"
-
 	"Growth/core/adapter"
 	"Growth/core/entity"
 )
@@ -43,16 +41,13 @@ func (es *FakeEventStore) Clear() {
 
 func (es *FakeEventStore) init() {
 	if es == nil {
-		fmt.Println("1")
 		*es = FakeEventStore{}
 	}
 	if es.events == nil {
-		fmt.Println("2")
 		es.events = make([]entity.Event, 0)
 	}
 }
 
 func (es *FakeEventStore) idleCapacity() int {
-	fmt.Println(es.Capacity, len(es.events))
 	return es.Capacity - len(es.events)
 }
