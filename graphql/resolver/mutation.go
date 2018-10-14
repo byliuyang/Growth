@@ -11,7 +11,7 @@ type Mutation struct {
 	EventStore adapter.EventStore
 }
 
-func (m *Mutation) Event2(ctx context.Context) (*Event, error) {
+func (m *Mutation) NewEvent(ctx context.Context) (*Event, error) {
 	event, err := usecase.PushEvent(entity.Event{}, m.EventStore)
 	return &Event{
 		event: event,

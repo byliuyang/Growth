@@ -13,8 +13,6 @@ type SchemaResolver struct {
 	resolver.Mutation
 }
 
-
-
 func RelayHandler(s string, resolver SchemaResolver) http.Handler {
 	schema := graphql.MustParseSchema(s, &resolver)
 	return &relay.Handler{Schema: schema}
