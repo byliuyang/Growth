@@ -12,12 +12,12 @@ import (
 	"github.com/graph-gophers/graphql-go/relay"
 )
 
-func Start(addr string, handler http.Handler) {
+func Start(addr string, logFlag int, gqlHandler http.Handler) {
 	r := mux.NewRouter()
 
 	r.Handle("/playground", graphiqlHandler())
-	r.Handle("/gql", handler)
-	r.Use(loggingMiddleware(log.New(os.Stdout, "", log.Llongfile | log.LUTC | log.LstdFlags)))
+	r.Handle("/gql", gqlHandler)
+	r.Use(loggingMiddleware(log.New(os.Stdout, "", logFlag)))
 
 	// Bind to a port and pass our router in
 	log.Fatal(http.ListenAndServe(addr, r))

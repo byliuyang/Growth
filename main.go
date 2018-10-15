@@ -2,6 +2,7 @@ package main
 
 import (
 	"io/ioutil"
+	"log"
 
 	"Growth/core/adapter/testadapter"
 	"Growth/dep"
@@ -16,10 +17,10 @@ func main() {
 	}
 
 	schema := mustReadFile("gql/schema/schema.graphql")
-
-	handler := d.RelayHandler(schema)
-	server.Start("localhost:8080", handler)
+	server.Start("localhost:8080", logFlag, d.RelayHandler(schema))
 }
+
+const logFlag = log.Llongfile | log.LUTC | log.LstdFlags
 
 func mustReadFile(filename string) string {
 	b, err := ioutil.ReadFile(filename)
