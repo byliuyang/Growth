@@ -3,13 +3,13 @@ package server
 import (
 	"log"
 	"net/http"
+	"os"
 
 	"Growth/gql"
 
+	"github.com/gorilla/mux"
 	"github.com/graph-gophers/graphql-go"
 	"github.com/graph-gophers/graphql-go/relay"
-
-	"github.com/gorilla/mux"
 )
 
 func Start(addr string, handler http.Handler) {
@@ -17,7 +17,7 @@ func Start(addr string, handler http.Handler) {
 
 	r.Handle("/playground", graphiqlHandler())
 	r.Handle("/gql", handler)
-	r.Use(loggingMiddleware)
+	r.Use(loggingMiddleware(log.New(os.Stdout, "", log.Llongfile | log.LUTC | log.LstdFlags)))
 
 	// Bind to a port and pass our router in
 	log.Fatal(http.ListenAndServe(addr, r))
@@ -27,7 +27,6 @@ func RelayHandler(s string, resolver gql.RootResolver) http.Handler {
 	schema := graphql.MustParseSchema(s, &resolver)
 	return &relay.Handler{Schema: schema}
 }
-
 
 func graphiqlHandler() http.Handler {
 	page := []byte(`
