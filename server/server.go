@@ -10,6 +10,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/graph-gophers/graphql-go"
 	"github.com/graph-gophers/graphql-go/relay"
+	"github.com/pkg/errors"
 )
 
 func Start(addr string, logFlag int, gqlHandler http.Handler) {
@@ -25,9 +26,12 @@ func Start(addr string, logFlag int, gqlHandler http.Handler) {
 	log.Fatal(http.ListenAndServe(addr, r))
 }
 
-func RelayHandler(s string, resolver gql.RootResolver) http.Handler {
-	schema := graphql.MustParseSchema(s, &resolver)
-	return &relay.Handler{Schema: schema}
+func RelayHandler(s string, resolver gql.RootResolver) (http.Handler, error) {
+	schema, err := graphql.ParseSchema(s, &resolver)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+	return &relay.Handler{Schema: schema}, nil
 }
 
 func graphiqlHandler(path string) http.Handler {

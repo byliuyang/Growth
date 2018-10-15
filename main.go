@@ -1,11 +1,11 @@
 package main
 
 import (
+	"fmt"
 	"log"
 
 	"Growth/core/adapter/testadapter"
 	"Growth/dep"
-	"Growth/gql"
 	"Growth/server"
 )
 
@@ -16,12 +16,12 @@ func main() {
 		},
 	}
 
-	schema, err := gql.ReadSchemas("gql/schema/schema.graphql")
-	if err != nil {
-		panic(err)
+	handler := d.RelayHandler()
+	if d.Err != nil {
+		panic(fmt.Sprintf("%+v\n", d.Err))
 	}
 
-	server.Start("localhost:8080", logFlag, d.RelayHandler(schema))
+	server.Start("localhost:8080", logFlag, handler)
 }
 
 const logFlag = log.Llongfile | log.LUTC | log.LstdFlags
