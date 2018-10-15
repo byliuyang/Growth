@@ -16,6 +16,6 @@ func TestCreateExperiment(t *testing.T) {
 		id := entity.ID(rand.Int63())
 		exp, err := CreateExperiment(id)
 		require.NoError(t, err)
-		require.Equal(t, id, exp.ID)
+		require.Equal(t, id, exp.Owner)
 	}
 }

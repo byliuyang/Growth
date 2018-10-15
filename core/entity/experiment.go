@@ -6,7 +6,7 @@ import (
 
 type Experiment struct {
 	Model
-	Owner int64 // todo: define User type
+	Owner ID // todo: define User type
 }
 
 // ID is
