@@ -10,7 +10,3 @@ type Query {
 type Mutation {
     newEvent(): Event
 }
-
-type Event {
-    id: Int!
-}

@@ -14,7 +14,10 @@ func main() {
 		EventStore: &testadapter.FakeEventStore{
 			Capacity: 10,
 		},
-		SchemaPaths: []string{"gql/schema/schema.graphql"},
+		SchemaPaths: []string{
+			"gql/schema/schema.graphql",
+			"gql/schema/types.graphql",
+		},
 	}
 
 	handler := d.RelayHandler()
