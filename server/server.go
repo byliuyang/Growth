@@ -15,8 +15,10 @@ import (
 func Start(addr string, logFlag int, gqlHandler http.Handler) {
 	r := mux.NewRouter()
 
-	r.Handle("/playground", graphiqlHandler())
-	r.Handle("/gql", gqlHandler)
+	gqlPath := "/graphql"
+
+	r.Handle("/playground", graphiqlHandler(gqlPath))
+	r.Handle(gqlPath, gqlHandler)
 	r.Use(loggingMiddleware(log.New(os.Stdout, "", logFlag)))
 
 	// Bind to a port and pass our router in
@@ -28,7 +30,7 @@ func RelayHandler(s string, resolver gql.RootResolver) http.Handler {
 	return &relay.Handler{Schema: schema}
 }
 
-func graphiqlHandler() http.Handler {
+func graphiqlHandler(path string) http.Handler {
 	page := []byte(`
 <!DOCTYPE html>
 
@@ -565,13 +567,14 @@ func graphiqlHandler() http.Handler {
 
       GraphQLPlayground.init(root, {
         // you can add more options here
-		endpoint: '/gql'
+		endpoint: '`+ path + `'
       })
     })
   </script>
 
 </html>
 `)
+
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Write(page)
 	})
