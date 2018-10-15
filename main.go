@@ -16,6 +16,8 @@ func main() {
 		},
 		SchemaPaths: []string{
 			"gql/schema/schema.graphql",
+			"gql/schema/query.graphql",
+			"gql/schema/mutation.graphql",
 			"gql/schema/types.graphql",
 		},
 	}
