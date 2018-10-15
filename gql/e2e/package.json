@@ -1,0 +1,15 @@
+{
+  "name": "e2e",
+  "version": "1.0.0",
+  "dependencies": {
+    "apollo-boost": "^0.1.16",
+    "graphql": "^14.0.2",
+    "graphql-tag": "^2.10.0"
+  },
+  "scripts": {
+    "test": "mocha"
+  },
+  "devDependencies": {
+    "mocha": "^5.2.0"
+  }
+}
