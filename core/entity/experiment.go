@@ -1,6 +1,13 @@
 package entity
 
-import "time"
+import (
+	"time"
+)
+
+type Experiment struct {
+	Model
+	Owner int64 // todo: define User type
+}
 
 // ID is
 type ID int64
