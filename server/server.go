@@ -1,10 +1,36 @@
 package server
 
 import (
+	"log"
 	"net/http"
+	"os"
+
+	"Growth/gql"
+
+	"github.com/gorilla/mux"
+	"github.com/graph-gophers/graphql-go"
+	"github.com/graph-gophers/graphql-go/relay"
 )
 
-func graphiqlHandler() http.Handler {
+func Start(addr string, logFlag int, gqlHandler http.Handler) {
+	r := mux.NewRouter()
+
+	gqlPath := "/graphql"
+
+	r.Handle("/playground", graphiqlHandler(gqlPath))
+	r.Handle(gqlPath, gqlHandler)
+	r.Use(loggingMiddleware(log.New(os.Stdout, "", logFlag)))
+
+	// Bind to a port and pass our router in
+	log.Fatal(http.ListenAndServe(addr, r))
+}
+
+func RelayHandler(s string, resolver gql.RootResolver) http.Handler {
+	schema := graphql.MustParseSchema(s, &resolver)
+	return &relay.Handler{Schema: schema}
+}
+
+func graphiqlHandler(path string) http.Handler {
 	page := []byte(`
 <!DOCTYPE html>
 
@@ -541,20 +567,15 @@ func graphiqlHandler() http.Handler {
 
       GraphQLPlayground.init(root, {
         // you can add more options here
-		endpoint: '/graphql'
+		endpoint: '`+ path + `'
       })
     })
   </script>
 
 </html>
 `)
+
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Write(page)
 	})
-}
-
-func Listen(addr string, handler http.Handler) {
-	http.Handle("/playground", graphiqlHandler())
-	http.Handle("/graphql", handler)
-	http.ListenAndServe(addr, nil)
 }

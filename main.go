@@ -1,11 +1,26 @@
 package main
 
 import (
+	"io/ioutil"
+	"log"
+
 	"Growth/core/adapter/testadapter"
 	"Growth/dep"
 	"Growth/server"
-	"io/ioutil"
 )
+
+func main() {
+	d := dep.Dep{
+		EventStore: &testadapter.FakeEventStore{
+			Capacity: 10,
+		},
+	}
+
+	schema := mustReadFile("gql/schema/schema.graphql")
+	server.Start("localhost:8080", logFlag, d.RelayHandler(schema))
+}
+
+const logFlag = log.Llongfile | log.LUTC | log.LstdFlags
 
 func mustReadFile(filename string) string {
 	b, err := ioutil.ReadFile(filename)
@@ -13,17 +28,4 @@ func mustReadFile(filename string) string {
 		panic(err)
 	}
 	return string(b)
-}
-
-func main() {
-	d := dep.Dep{
-		EventStore: &testadapter.FakeEventStore{
-			Capacity:10,
-		},
-	}
-
-	schema := mustReadFile("graphql/schema/schema.graphqls")
-
-	handler := d.RelayHandler(schema)
-	server.Listen(":8080", handler)
 }

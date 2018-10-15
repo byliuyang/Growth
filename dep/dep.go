@@ -1,10 +1,11 @@
 package dep
 
 import (
-	"Growth/core/adapter"
-	"Growth/graphql"
-	"Growth/graphql/resolver"
 	"net/http"
+
+	"Growth/core/adapter"
+	"Growth/gql"
+	"Growth/server"
 )
 
 type Dep struct {
@@ -12,13 +13,13 @@ type Dep struct {
 }
 
 func (d *Dep) RelayHandler(schema string) http.Handler {
-	r := graphql.SchemaResolver{
-		Query:resolver.Query{
-			EventStore:d.EventStore,
+	r := gql.RootResolver{
+		Query: gql.Query{
+			EventStore: d.EventStore,
 		},
-		Mutation: resolver.Mutation{
-			EventStore:d.EventStore,
+		Mutation: gql.Mutation{
+			EventStore: d.EventStore,
 		},
 	}
-	return graphql.RelayHandler(schema, r)
+	return server.RelayHandler(schema, r)
 }

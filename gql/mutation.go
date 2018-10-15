@@ -1,10 +1,11 @@
-package resolver
+package gql
 
 import (
+	"context"
+
 	"Growth/core/adapter"
 	"Growth/core/entity"
 	"Growth/core/usecase"
-	"context"
 )
 
 type Mutation struct {
