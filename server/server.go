@@ -1,8 +1,33 @@
 package server
 
 import (
+	"log"
 	"net/http"
+
+	"Growth/gql"
+
+	"github.com/graph-gophers/graphql-go"
+	"github.com/graph-gophers/graphql-go/relay"
+
+	"github.com/gorilla/mux"
 )
+
+func Start(addr string, handler http.Handler) {
+	r := mux.NewRouter()
+
+	r.Handle("/playground", graphiqlHandler())
+	r.Handle("/gql", handler)
+	r.Use(loggingMiddleware)
+
+	// Bind to a port and pass our router in
+	log.Fatal(http.ListenAndServe(addr, r))
+}
+
+func RelayHandler(s string, resolver gql.RootResolver) http.Handler {
+	schema := graphql.MustParseSchema(s, &resolver)
+	return &relay.Handler{Schema: schema}
+}
+
 
 func graphiqlHandler() http.Handler {
 	page := []byte(`
@@ -14,9 +39,9 @@ func graphiqlHandler() http.Handler {
   <meta charset=utf-8 />
   <meta name="viewport" content="user-scalable=no, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, minimal-ui">
   <title>GraphQL Playground</title>
-  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/graphql-playground-react/build/static/css/index.css" />
-  <link rel="shortcut icon" href="//cdn.jsdelivr.net/npm/graphql-playground-react/build/favicon.png" />
-  <script src="//cdn.jsdelivr.net/npm/graphql-playground-react/build/static/js/middleware.js"></script>
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gql-playground-react/build/static/css/index.css" />
+  <link rel="shortcut icon" href="//cdn.jsdelivr.net/npm/gql-playground-react/build/favicon.png" />
+  <script src="//cdn.jsdelivr.net/npm/gql-playground-react/build/static/js/middleware.js"></script>
 
 </head>
 
@@ -541,7 +566,7 @@ func graphiqlHandler() http.Handler {
 
       GraphQLPlayground.init(root, {
         // you can add more options here
-		endpoint: '/graphql'
+		endpoint: '/gql'
       })
     })
   </script>
@@ -551,10 +576,4 @@ func graphiqlHandler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Write(page)
 	})
-}
-
-func Listen(addr string, handler http.Handler) {
-	http.Handle("/playground", graphiqlHandler())
-	http.Handle("/graphql", handler)
-	http.ListenAndServe(addr, nil)
 }
