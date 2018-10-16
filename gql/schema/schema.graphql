@@ -2,15 +2,3 @@ schema {
     query: Query
     mutation: Mutation
 }
-
-type Query {
-    event(id: Int!): Event
-}
-
-type Mutation {
-    newEvent(): Event
-}
-
-type Event {
-    id: Int!
-}

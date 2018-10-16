@@ -6,13 +6,23 @@ import (
 	"Growth/core/adapter"
 	"Growth/gql"
 	"Growth/server"
+
+	"github.com/pkg/errors"
 )
 
 type Dep struct {
-	EventStore adapter.EventStore
+	EventStore  adapter.EventStore
+	SchemaPaths []string
+	Err         error
 }
 
-func (d *Dep) RelayHandler(schema string) http.Handler {
+func (d *Dep) RelayHandler() http.Handler {
+	schema, err := gql.ReadSchemas(d.SchemaPaths...)
+	if err != nil {
+		d.Err = errors.WithStack(err)
+		return nil
+	}
+
 	r := gql.RootResolver{
 		Query: gql.Query{
 			EventStore: d.EventStore,
@@ -21,5 +31,7 @@ func (d *Dep) RelayHandler(schema string) http.Handler {
 			EventStore: d.EventStore,
 		},
 	}
-	return server.RelayHandler(schema, r)
+	h, err := server.RelayHandler(schema, r)
+	d.Err = errors.WithStack(err)
+	return h
 }

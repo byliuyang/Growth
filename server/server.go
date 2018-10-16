@@ -25,9 +25,12 @@ func Start(addr string, logFlag int, gqlHandler http.Handler) {
 	log.Fatal(http.ListenAndServe(addr, r))
 }
 
-func RelayHandler(s string, resolver gql.RootResolver) http.Handler {
-	schema := graphql.MustParseSchema(s, &resolver)
-	return &relay.Handler{Schema: schema}
+func RelayHandler(s string, resolver gql.RootResolver) (http.Handler, error) {
+	schema, err := graphql.ParseSchema(s, &resolver)
+	if err != nil {
+		return nil, err
+	}
+	return &relay.Handler{Schema: schema}, nil
 }
 
 func graphiqlHandler(path string) http.Handler {
@@ -567,7 +570,7 @@ func graphiqlHandler(path string) http.Handler {
 
       GraphQLPlayground.init(root, {
         // you can add more options here
-		endpoint: '`+ path + `'
+		endpoint: '` + path + `'
       })
     })
   </script>
