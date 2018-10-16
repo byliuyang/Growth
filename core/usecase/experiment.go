@@ -21,7 +21,11 @@ func (e *Experiment) CreateExperiment(userID entity.ID) (entity.Experiment) {
 	return exp
 }
 
-func (e *Experiment) FetchExperimentByID(id entity.ID) entity.Experiment {
+func (e *Experiment) FetchByOwner(ownerID entity.ID) []entity.Experiment {
+	return e.store.FetchByOwner(ownerID)
+}
+
+func (e *Experiment) FetchByID(id entity.ID) entity.Experiment {
 	exp := e.store.FetchByID(id)
 	e.errExperimentNotFound = e.store.ErrNotFound()
 	e.errOther = e.store.ErrOther()

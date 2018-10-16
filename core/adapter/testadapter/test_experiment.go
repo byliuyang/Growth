@@ -20,6 +20,15 @@ func (store *FakeExperimentStore) Save(e entity.Experiment) entity.Experiment {
 	return e
 }
 
+func (store *FakeExperimentStore) FetchByOwner(id entity.ID) (exps []entity.Experiment) {
+	for _, e := range store.experiments {
+		if e.Owner == id {
+			exps = append(exps, e)
+		}
+	}
+	return
+}
+
 func (store *FakeExperimentStore) FetchByID(id entity.ID) entity.Experiment {
 	for _, e := range store.experiments {
 		if e.ID == id {

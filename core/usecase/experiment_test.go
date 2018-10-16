@@ -15,7 +15,7 @@ func TestExperiment(t *testing.T) {
 	e := NewExperiment(&testadapter.FakeExperimentStore{})
 
 	t.Run("no data when the store is empty", func(t *testing.T) {
-		e.FetchExperimentByID(entity.ID(1))
+		e.FetchByID(entity.ID(1))
 		require.Equal(t, entity.ID(1), e.ErrExperimentNotFound().ID)
 	})
 
@@ -27,12 +27,24 @@ func TestExperiment(t *testing.T) {
 			require.NoError(t, e.ErrOther())
 			require.Equal(t, userID, exp.Owner)
 
-			exp2 := e.FetchExperimentByID(exp.ID)
+			exp2 := e.FetchByID(exp.ID)
 			require.Nil(t, e.ErrExperimentNotFound())
 			require.NoError(t, e.ErrOther())
 
 			require.Equal(t, exp2.ID, exp.ID, entity.ID(i+1))
 			require.Equal(t, userID, exp2.Owner)
+		}
+	})
+
+	t.Run("can fetch by owner", func(t *testing.T) {
+		userID := entity.ID(10)
+		e.CreateExperiment(userID)
+		e.CreateExperiment(userID)
+
+		exps := e.FetchByOwner(userID)
+		require.Equal(t, 2, len(exps))
+		for _, exp := range exps {
+			require.Equal(t, userID, exp.Owner)
 		}
 	})
 }
