@@ -21,7 +21,7 @@ func TestFetchEventById(t *testing.T) {
 
 	t.Run("event not found when store is empty", func(t *testing.T) {
 		e, err := FetchEventByID(1, eventStore)
-		require.IsType(t, &adapter.ErrEventNotFound{}, err)
+		require.IsType(t, &adapter.ErrEventNotFound{}, err) // todo: an error leak here, should define use case level error for it
 		require.Equal(t, "event:1 not found", err.Error())
 		require.Equal(t, entity.Event{}, e)
 	})
