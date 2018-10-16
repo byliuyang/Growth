@@ -5,9 +5,16 @@ import (
 	"Growth/core/entity"
 )
 
-func NewExperiment(store adapter.ExperimentStore) *Experiment {
-	return &Experiment{store: store}
+// This interface is for documentation only.
+type experiment interface {
+	CreateExperiment(userID entity.ID) entity.Experiment
+	FetchByOwner(ownerID entity.ID) []entity.Experiment
+	FetchByID(id entity.ID) entity.Experiment
+	ErrExperimentNotFound() *adapter.ErrExperimentNotFound
+	ErrOther() error
 }
+
+var _ experiment = (*Experiment)(nil)
 
 type Experiment struct {
 	store                 adapter.ExperimentStore
@@ -15,7 +22,11 @@ type Experiment struct {
 	errOther              error
 }
 
-func (e *Experiment) CreateExperiment(userID entity.ID) (entity.Experiment) {
+func NewExperiment(store adapter.ExperimentStore) *Experiment {
+	return &Experiment{store: store}
+}
+
+func (e *Experiment) CreateExperiment(userID entity.ID) entity.Experiment {
 	exp := e.store.Save(entity.Experiment{Owner: userID})
 	e.errOther = e.store.ErrOther()
 	return exp
