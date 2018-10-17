@@ -31,6 +31,7 @@ func (d *Dep) RelayHandler() http.Handler {
 			EventStore: d.EventStore,
 		},
 	}
+
 	h, err := server.RelayHandler(schema, r)
 	d.Err = errors.WithStack(err)
 	return h
