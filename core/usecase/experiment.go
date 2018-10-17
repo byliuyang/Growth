@@ -22,8 +22,8 @@ type Experiment struct {
 	errOther              error
 }
 
-func NewExperiment(store adapter.ExperimentStore) *Experiment {
-	return &Experiment{store: store}
+func NewExperiment(store adapter.ExperimentStore) Experiment {
+	return Experiment{store: store}
 }
 
 func (e *Experiment) CreateExperiment(userID entity.ID) entity.Experiment {
