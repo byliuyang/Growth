@@ -1,4 +1,4 @@
-package main_test
+package gql_test
 
 import (
 	"fmt"
@@ -12,6 +12,7 @@ import (
 	"Growth/core/entity"
 	"Growth/dep"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestGraphQLAPI(t *testing.T) {
@@ -22,10 +23,10 @@ func TestGraphQLAPI(t *testing.T) {
 	d := dep.Dep{
 		EventStore: &fakeAdapterStore,
 		SchemaPaths: []string{
-			"gql/schema/schema.graphql",
-			"gql/schema/query.graphql",
-			"gql/schema/mutation.graphql",
-			"gql/schema/types.graphql",
+			"schema/schema.graphql",
+			"schema/query.graphql",
+			"schema/mutation.graphql",
+			"schema/types.graphql",
 		},
 	}
 
@@ -41,10 +42,6 @@ func TestGraphQLAPI(t *testing.T) {
 			response string
 		}{
 			{
-				eventId:  0,
-				response: `{"errors":[{"message":"event:0 not found","path":["event"]}],"data":{"event":null}}`,
-			},
-			{
 				eventId:  1,
 				response: `{"data":{"event":{"id":1}}}`,
 			},
@@ -52,28 +49,34 @@ func TestGraphQLAPI(t *testing.T) {
 				eventId:  10,
 				response: `{"errors":[{"message":"event:10 not found","path":["event"]}],"data":{"event":null}}`,
 			},
+			{
+				eventId:  2414143321,
+				response: `{"errors":[{"message":"could not unmarshal 2.414143321e+09 (float64) into int32: not a 32-bit integer"}],"data":{}}`,
+			},
 		}
 
 		for _, tc := range testCases {
-			query := fmt.Sprintf(`
+			t2.Run(fmt.Sprintf("with id=%d", tc.eventId), func(t3 *testing.T) {
+				query := fmt.Sprintf(`
 			{
 				"query": "query getEvent($id: Int!) {event(id: $id) {id}}",
 				"variables": {"id": %d}
 			}`,
-				tc.eventId)
+					tc.eventId)
 
-			fakeAdapterStore.Save(entity.Event{})
+				fakeAdapterStore.Save(entity.Event{})
 
-			res, err := http.Post(ts.URL, "application/json", strings.NewReader(query))
-			assert.Nil(t, err)
+				res, err := http.Post(ts.URL, "", strings.NewReader(query))
+				require.Nil(t, err)
 
-			assert.Equal(t, http.StatusOK, res.StatusCode)
+				require.Equal(t, http.StatusOK, res.StatusCode)
 
-			b, err := ioutil.ReadAll(res.Body)
-			assert.Nil(t, err)
-			assert.Equal(t, tc.response, string(b))
+				b, err := ioutil.ReadAll(res.Body)
+				require.Nil(t, err)
+				require.Equal(t, tc.response, string(b))
 
-			fakeAdapterStore.Clear()
+				fakeAdapterStore.Clear()
+			})
 		}
 	})
 }
