@@ -16,9 +16,7 @@ import (
 )
 
 func TestGraphQLAPI(t *testing.T) {
-	fakeAdapterStore := testadapter.FakeEventStore{
-		Capacity: 10,
-	}
+	fakeAdapterStore := testadapter.FakeEventStore{}
 
 	d := dep.Dep{
 		EventStore: &fakeAdapterStore,
@@ -36,47 +34,94 @@ func TestGraphQLAPI(t *testing.T) {
 	ts := httptest.NewServer(handler)
 	defer ts.Close()
 
-	t.Run("query event", func(t2 *testing.T) {
-		testCases := []struct {
-			eventId  int
-			response string
-		}{
-			{
-				eventId:  1,
-				response: `{"data":{"event":{"id":1}}}`,
-			},
-			{
-				eventId:  10,
-				response: `{"errors":[{"message":"event:10 not found","path":["event"]}],"data":{"event":null}}`,
-			},
-			{
-				eventId:  2414143321,
-				response: `{"errors":[{"message":"could not unmarshal 2.414143321e+09 (float64) into int32: not a 32-bit integer"}],"data":{}}`,
-			},
-		}
+	t.Run("query", func(t2 *testing.T) {
+		t2.Run("event", func(t3 *testing.T) {
+			fakeAdapterStore.Capacity = 12
 
-		for _, tc := range testCases {
-			t2.Run(fmt.Sprintf("with id=%d", tc.eventId), func(t3 *testing.T) {
-				query := fmt.Sprintf(`
+			testCases := []struct {
+				eventId  int
+				expectedResponse string
+			}{
+				{
+					eventId:  1,
+					expectedResponse: `{"data":{"event":{"id":1}}}`,
+				},
+				{
+					eventId:  10,
+					expectedResponse: `{"errors":[{"message":"event:10 not found","path":["event"]}],"data":{"event":null}}`,
+				},
+				{
+					eventId:  2414143321,
+					expectedResponse: `{"errors":[{"message":"could not unmarshal 2.414143321e+09 (float64) into int32: not a 32-bit integer"}],"data":{}}`,
+				},
+			}
+
+			for _, tc := range testCases {
+				t3.Run(fmt.Sprintf("with id=%d", tc.eventId), func(t4 *testing.T) {
+					query := fmt.Sprintf(`
 			{
 				"query": "query getEvent($id: Int!) {event(id: $id) {id}}",
 				"variables": {"id": %d}
 			}`,
-					tc.eventId)
+						tc.eventId)
 
-				fakeAdapterStore.Save(entity.Event{})
+					fakeAdapterStore.Save(entity.Event{})
 
-				res, err := http.Post(ts.URL, "", strings.NewReader(query))
-				require.Nil(t, err)
+					res, err := http.Post(ts.URL, "", strings.NewReader(query))
+					require.Nil(t4, err)
 
-				require.Equal(t, http.StatusOK, res.StatusCode)
+					require.Equal(t4, http.StatusOK, res.StatusCode)
 
-				b, err := ioutil.ReadAll(res.Body)
-				require.Nil(t, err)
-				require.Equal(t, tc.response, string(b))
+					b, err := ioutil.ReadAll(res.Body)
+					require.Nil(t4, err)
+					require.Equal(t4, tc.expectedResponse, string(b))
 
-				fakeAdapterStore.Clear()
-			})
-		}
+					fakeAdapterStore.Clear()
+				})
+			}
+		})
+	})
+
+	t.Run("mutation", func(t2 *testing.T) {
+		t2.Run("newEvent", func(t3 *testing.T) {
+			fakeAdapterStore.Capacity = 2
+
+			testCases := []struct {
+				existingEventsCount int
+				expectedResponse string
+			}{
+				{
+					existingEventsCount:0,
+					expectedResponse: `{"data":{"newEvent":{"id":1}}}`,
+				},
+				{
+					existingEventsCount:2,
+					expectedResponse: `{"errors":[{"message":"event store out of capacity, max: 2","path":["newEvent"]}],"data":{"newEvent":null}}`,
+				},
+			}
+
+			for _, tc := range testCases {
+				t3.Run(fmt.Sprintf("with eventCount=%d", tc.existingEventsCount), func(t4 *testing.T) {
+					mutation := `
+			{
+				"query": "mutation { newEvent {id} }"
+			}`
+					for i := 0; i < tc.existingEventsCount; i++ {
+						fakeAdapterStore.Save(entity.Event{})
+					}
+
+					res, err := http.Post(ts.URL, "", strings.NewReader(mutation))
+					require.Nil(t4, err)
+
+					require.Equal(t4, http.StatusOK, res.StatusCode)
+
+					b, err := ioutil.ReadAll(res.Body)
+					require.Nil(t4, err)
+					require.Equal(t4, tc.expectedResponse, string(b))
+
+					fakeAdapterStore.Clear()
+				})
+			}
+		})
 	})
 }
