@@ -1,4 +1,4 @@
-package gql_test
+package gqltest_test
 
 import (
 	"fmt"
@@ -21,10 +21,10 @@ func TestGraphQLAPI(t *testing.T) {
 	d := dep.Dep{
 		EventStore: &fakeAdapterStore,
 		SchemaPaths: []string{
-			"schema/schema.graphql",
-			"schema/query.graphql",
-			"schema/mutation.graphql",
-			"schema/types.graphql",
+			"../schema/schema.graphql",
+			"../schema/query.graphql",
+			"../schema/mutation.graphql",
+			"../schema/types.graphql",
 		},
 	}
 
@@ -39,19 +39,19 @@ func TestGraphQLAPI(t *testing.T) {
 			fakeAdapterStore.Capacity = 12
 
 			testCases := []struct {
-				eventId  int
+				eventId          int
 				expectedResponse string
 			}{
 				{
-					eventId:  1,
+					eventId:          1,
 					expectedResponse: `{"data":{"event":{"id":1}}}`,
 				},
 				{
-					eventId:  10,
+					eventId:          10,
 					expectedResponse: `{"errors":[{"message":"event:10 not found","path":["event"]}],"data":{"event":null}}`,
 				},
 				{
-					eventId:  2414143321,
+					eventId:          2414143321,
 					expectedResponse: `{"errors":[{"message":"could not unmarshal 2.414143321e+09 (float64) into int32: not a 32-bit integer"}],"data":{}}`,
 				},
 			}
@@ -88,15 +88,15 @@ func TestGraphQLAPI(t *testing.T) {
 
 			testCases := []struct {
 				existingEventsCount int
-				expectedResponse string
+				expectedResponse    string
 			}{
 				{
-					existingEventsCount:0,
-					expectedResponse: `{"data":{"newEvent":{"id":1}}}`,
+					existingEventsCount: 0,
+					expectedResponse:    `{"data":{"newEvent":{"id":1}}}`,
 				},
 				{
-					existingEventsCount:2,
-					expectedResponse: `{"errors":[{"message":"event store out of capacity, max: 2","path":["newEvent"]}],"data":{"newEvent":null}}`,
+					existingEventsCount: 2,
+					expectedResponse:    `{"errors":[{"message":"event store out of capacity, max: 2","path":["newEvent"]}],"data":{"newEvent":null}}`,
 				},
 			}
 
